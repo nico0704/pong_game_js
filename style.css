@@ -1,0 +1,9 @@
+canvas {
+    border-style: solid;
+    border-radius: 10px;
+    border-color: var(--border_color);
+    margin-left: 9%;
+    margin-right: 9%;
+    margin-top: 10%;
+    margin-bottom: 2%;
+}
