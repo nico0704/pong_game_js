@@ -1,4 +1,4 @@
-// TODO
+// @TODO
 // 1. Beim runterkommen sprung sperren
 // 2. endloser sprung verhindern
 // 3. Code verschönern -> Vektor erstellen für blocks und für player
@@ -6,6 +6,10 @@
 // 5. Spielphysik verbessern (player geht länger hoch als man drückt und beschleunigt beim runterkommen)
 // 6. alle Eigenschaften in Abhängigkeit der Canvas-Größe setzen
 // 7. doppeltes Design
+// 8. Particle System -> Optional
+// 9. Enemy
+// 10. Shot Funktion
+// 11. Musik & SoundFx
 
 
 const canvas = document.getElementById("canvas");
