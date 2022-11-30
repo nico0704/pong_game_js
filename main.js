@@ -1,17 +1,14 @@
 // @TODO
-// 1. Beim runterkommen sprung sperren -> DONE
-// 2. endloser sprung verhindern -> DONE
-// 3. Code verschönern -> Vektor erstellen für blocks und für player
-// 4. Jumpcounter & Punktecounter -> DONE
-// 5. Spielphysik verbessern (player geht länger hoch als man drückt und beschleunigt beim runterkommen)
-// 6. alle Eigenschaften in Abhängigkeit der Canvas-Größe setzen
-// 7. doppeltes Design
-// 8. Particle System -> Optional
-// 9. Enemy
-// 10. Shot Funktion
-// 11. Musik & SoundFx
+// - Code verschönern -> Vektor erstellen für blocks und für player
+// - Spielphysik verbessern (player geht länger hoch als man drückt und beschleunigt beim runterkommen)
+// - alle Eigenschaften in Abhängigkeit der Canvas-Größe setzen
+// - doppeltes Design
+// - Particle System -> Optional
+// - Enemy
+// - Shot Funktion
+// - Musik & SoundFx
 
-// Sound FX
+// sound fx
 /*var sfx = {
     game_over: new Howl({
         src: "./assets/error.mp3"
@@ -20,14 +17,12 @@
         src: "./assets/jump.mp3"
     })
 }
-
 // music
 var music = {
     game_music: new Howl({
 
     })
 */
-
 
 const canvas = document.getElementById("canvas");
 canvas.width = window.innerWidth - window.innerWidth * 0.2;
