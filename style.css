@@ -1,7 +1,8 @@
 canvas {
     border-style: solid;
     border-radius: 10px;
-    border-color: var(--border_color);
+    border-color: black;
+    background-color:beige;
     margin-left: 9%;
     margin-right: 9%;
     margin-top: 10%;
