@@ -1,6 +1,7 @@
 // @TODO
 // - Code verschönern -> Vektor erstellen für blocks und für player
 // - Spielphysik verbessern (player geht länger hoch als man drückt und beschleunigt beim runterkommen)
+// - Spiel mit Verlauf schwieriger / schneller machen
 // - alle Eigenschaften in Abhängigkeit der Canvas-Größe setzen
 // - doppeltes Design
 // - Particle System -> Optional
@@ -122,8 +123,8 @@ function gameLoop() {
     }
 
     //make blocks move backwards at the same speed
-    block1_x -= player_dx / 6;
-    block2_x -= player_dx / 6;
+    block1_x -= player_dx / 4;
+    block2_x -= player_dx / 4;
 
     if (pressed == true) {
         // check if player_y reached maximum
