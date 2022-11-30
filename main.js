@@ -11,6 +11,24 @@
 // 10. Shot Funktion
 // 11. Musik & SoundFx
 
+// Sound FX
+/*var sfx = {
+    game_over: new Howl({
+        src: "./assets/error.mp3"
+    }),
+    jump : new Howl({
+        src: "./assets/jump.mp3"
+    })
+}
+
+// music
+var music = {
+    game_music: new Howl({
+
+    })
+*/
+
+
 const canvas = document.getElementById("canvas");
 canvas.width = window.innerWidth - window.innerWidth * 0.2;
 canvas.height = window.innerHeight - window.innerHeight * 0.2;
@@ -33,7 +51,8 @@ var block1_x, block1_y, block1_width, block1_height, block1_touched;
 var block2_x, block2_y, block2_width, block2_height, block2_touched;
 // Display
 var jump_counter;
-var points; // basically the amount of blocks that were jumped
+var blocks_jumped;
+var record = 0;
 
 setup();
 
@@ -60,7 +79,7 @@ function setup() {
     block1_width = canvas.width;
     block1_height = canvas.height;
     // display setup
-    points = 0;
+    blocks_jumped = 0;
     jump_counter = 0;
     total_blocks = 0;
     // block touched or not
@@ -75,11 +94,13 @@ function gameLoop() {
     ctx.fillStyle = "red";
     ctx.fillRect(player_x, player_y, player_width, player_height);
 
-    // Draw jump counter & points
+    // Draw jump counter & blocks_jumped
     ctx.font = "26px Courier New";
-    ctx.fillText("POINTS: " + points, canvas.width - 225, 50);
+    ctx.fillText("BLOCKS : " + blocks_jumped, canvas.width - 225, 50);
     ctx.font = "26px Courier New";
-    ctx.fillText("JUMPS : " + jump_counter, canvas.width - 225, 80);
+    ctx.fillText("JUMPS  : " + jump_counter, canvas.width - 225, 80);
+    ctx.font = "26px Courier New";
+    ctx.fillText("RECORD : " + record, canvas.width - 225, 110);
 
     if (draw_block_1 == true) {
         // Draw block_1
@@ -106,8 +127,8 @@ function gameLoop() {
     }
 
     //make blocks move backwards at the same speed
-    block1_x -= player_dx / 4;
-    block2_x -= player_dx / 4;
+    block1_x -= player_dx / 6;
+    block2_x -= player_dx / 6;
 
     if (pressed == true) {
         // check if player_y reached maximum
@@ -143,7 +164,7 @@ function check_for_block1() {
         player_y += player_dy_down;
     } else {
         // the following commands execute when the player is touching block
-        points = block1_touched == false ? points + 1 : points;
+        blocks_jumped = block1_touched == false ? blocks_jumped + 1 : blocks_jumped;
         jump_counter = collider == false ? jump_counter + 1 : jump_counter;
         block1_touched = true;
         collider = true;
@@ -166,7 +187,7 @@ function check_for_block2() {
         player_y += player_dy_down;
     } else {
         // the following commands execute when the player is touching block
-        points = block2_touched == false ? points + 1 : points;
+        blocks_jumped = block2_touched == false ? blocks_jumped + 1 : blocks_jumped;
         jump_counter = collider == false ? jump_counter + 1 : jump_counter;
         block2_touched = true;
         collider = true;
@@ -210,6 +231,7 @@ function keyDownHandler(e) {
         if (prevent_from_going_up == true) {
             return;
         }
+        //sfx.jump.play();
         pressed = true;
     }
 }
@@ -224,5 +246,7 @@ function keyUpHandler(e) {
 }
 
 function gameOver() {
+    record = record < jump_counter ? jump_counter : record;
+    //sfx.game_over.play();
     setup();
 }
