@@ -87,7 +87,7 @@ function gameLoop() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Draw player block
-    ctx.fillStyle = "red";
+    ctx.fillStyle = "grey";
     ctx.fillRect(player_x, player_y, player_width, player_height);
 
     // Draw jump counter & blocks_jumped
@@ -100,7 +100,7 @@ function gameLoop() {
 
     if (draw_block_1 == true) {
         // Draw block_1
-        ctx.fillStyle = "green";
+        ctx.fillStyle = "burlywood";
         ctx.fillRect(block1_x, block1_y, block1_width, block1_height);
     } else if (block2_x + block2_width < block2_width * 0.75) {
         init_block(1);
@@ -108,7 +108,7 @@ function gameLoop() {
     }
     if (draw_block_2 == true) {
         // Draw block_2
-        ctx.fillStyle = "blue";
+        ctx.fillStyle = "burlywood";
         ctx.fillRect(block2_x, block2_y, block2_width, block2_height);
     } else if (block1_x + block1_width < block1_width * 0.75) {
         init_block(2);
