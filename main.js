@@ -35,9 +35,6 @@ var block2_x, block2_y, block2_width, block2_height, block2_touched;
 var jump_counter;
 var points; // basically the amount of blocks that were jumped
 
-
-
-
 setup();
 
 // Setup
