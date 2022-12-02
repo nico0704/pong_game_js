@@ -86,6 +86,8 @@ function setup() {
 function gameLoop() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    
+
     // Draw player block
     ctx.fillStyle = "grey";
     ctx.fillRect(player_x, player_y, player_width, player_height);
@@ -138,9 +140,7 @@ function gameLoop() {
     if (pressed == false) {
         block == 1 ? check_for_block1() : check_for_block2();
     }
-    setTimeout(() => {
-        requestAnimationFrame(gameLoop);
-    }, 1000 / 60);
+    requestAnimationFrame(gameLoop);
 }
 
 gameLoop();
