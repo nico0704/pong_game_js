@@ -3,8 +3,13 @@ canvas.width = window.innerWidth - window.innerWidth * 0.2;
 canvas.height = window.innerHeight - window.innerHeight * 0.2;
 const ctx = canvas.getContext("2d");
 
+let player, block1, block2, obstacle;
+
 // Flags
 let pressed, draw_block_1, draw_block_2, collider, block_to_check;
+
+// shot array
+let shots = [];
 
 // Display
 let jump_counter;
@@ -22,12 +27,16 @@ class Block {
     }
     reset() {
         this.x = canvas.width;
-        this.y = randomIntFromInterval(275, 350);
+        this.y = randomIntFromInterval(300, 380);
         this.y = Math.round(this.y / 10) * 10;
         this.width = randomIntFromInterval(750, 1200);
         this.height = canvas.height - this.y;
         this.touched = false;
         this.draw = true;
+    }
+    draw_block() {
+        ctx.fillStyle = "burlywood";
+        ctx.fillRect(this.x, this.y, this.width, this.height);
     }
     checkBlock() {
         if (player.y > this.y - player.height) {
@@ -75,13 +84,31 @@ class Obstacle extends Block {
     }
 }
 
-let player, block1, block2;
-setup();
+class Shot extends Block {
+    constructor(x, y, width, height, draw) {
+        super(x, y, width, height, draw);
+        shots.push(this);
+    }
+    collision() {
+        if (
+            this.x >= obstacle.x &&
+            this.x <= obstacle.x + obstacle.width &&
+            this.y > obstacle.y &&
+            this.y < obstacle.y + obstacle.width
+        ) {
+            console.log("collided");
+            this.draw = false;
+            return true;
+        }
+        return false;
+    }
+}
 
 function setup() {
     player = new Player(200, 100, 50, 50, 60, 20, 10);
-    block1 = new Block(200, 250, canvas.width, canvas.height, true);
-    block2 = new Block(200, 250, canvas.width, canvas.height, false);
+    block1 = new Block(200, 300, canvas.width, canvas.height, true);
+    block2 = new Block(200, 380, canvas.width, canvas.height, false);
+    obstacle = new Obstacle(0, 0, 50, 0, false);
     // flag setup
     pressed = false;
     block_to_check = 1;
@@ -90,7 +117,10 @@ function setup() {
     // display setup
     blocks_jumped = 0;
     jump_counter = 0;
+    // shots
+    shots = [];
 }
+setup();
 
 function gameLoop() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -106,19 +136,21 @@ function gameLoop() {
     ctx.fillText("RECORD : " + record, canvas.width - 225, 110);
 
     if (block1.draw) {
-        // Draw block_1
-        ctx.fillStyle = "burlywood";
-        ctx.fillRect(block1.x, block1.y, block1.width, block1.height);
+        block1.draw_block();
     } else if (block2.x + block2.width < block2.width * 0.75) {
         block1.reset();
     }
 
     if (block2.draw) {
-        // Draw block_2
-        ctx.fillStyle = "burlywood";
-        ctx.fillRect(block2.x, block2.y, block2.width, block2.height);
+        block2.draw_block();
     } else if (block1.x + block1.width < block1.width * 0.75) {
         block2.reset();
+    }
+
+    if (obstacle.draw) {
+        obstacle.draw_block();
+        obstacle.x -= player.dx / 10;
+        obstacle.draw = obstacle.x + obstacle.width <= 0 ? false : true;
     }
 
     if (block1.x + block1.width < 0) {
@@ -141,13 +173,40 @@ function gameLoop() {
             player.y -= player.dy_up;
         }
     }
+    if (blocks_jumped % 2 == 0 && blocks_jumped != 0 && !obstacle.draw) {
+        // Set obstacle draw property to true so that obstacle gets drawn next round
+        obstacle.draw = true;
+        obstacle.y = randomIntFromInterval(150, 200);
+        obstacle.height = 50;
+        obstacle.x = canvas.width * 2;
+    }
     if (!pressed) {
         // console.log(block_to_check);
         block_to_check == 1 ? block1.checkBlock() : block2.checkBlock();
     }
 
-    // Draw obstacle
-
+    // shots
+    for (let i = 0; i < shots.length; i++) {
+        if (shots[i].draw) {
+            // draw shot
+            ctx.fillStyle = "black";
+            ctx.fillRect(
+                shots[i].x,
+                shots[i].y,
+                shots[i].width,
+                shots[i].height
+            );
+            shots[i].x += player.dx / 8;
+            // check for collision
+            let collided = shots[i].collision();
+            if (collided) {
+                obstacle.draw = false;
+            }
+        }
+        if (shots[i].x >= canvas.width) {
+            shots.shift();
+        }
+    }
     requestAnimationFrame(gameLoop);
 }
 gameLoop();
@@ -167,6 +226,16 @@ function keyDownHandler(e) {
         }
         //sfx.jump.play();
         pressed = true;
+    }
+    // shot
+    if (e.keyCode == 32) {
+        new Shot(
+            player.x + player.width,
+            player.y + player.height / 2,
+            6,
+            6,
+            true
+        );
     }
 }
 
