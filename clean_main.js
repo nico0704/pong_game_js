@@ -1,7 +1,22 @@
 const canvas = document.getElementById("canvas");
-canvas.width = window.innerWidth - window.innerWidth * 0.2;
-canvas.height = window.innerHeight - window.innerHeight * 0.2;
+canvas.width =  window.innerWidth;
+canvas.height = window.innerHeight;
 const ctx = canvas.getContext("2d");
+
+const acceleration = 0.95;
+const player_dx = 100;
+const player_dy_up = 25;
+const player_dy_down = 25;
+const player_width = player_dy_down * 4;
+const player_height = player_dy_down * 4;
+const max_x_blocks = canvas.width;
+const min_x_blocks = canvas.width * 0.8;
+const min_y_blocks = Math.round((canvas.height / 2) / player_height) * player_height;
+const max_y_blocks = Math.round((canvas.height * 0.6) / player_height) * player_height;
+
+console.log({ max_x_blocks, min_x_blocks, max_y_blocks, min_y_blocks });
+console.log({ player_dx, player_dy_up, player_dy_down, player_width, player_height });
+
 
 let player, block1, block2, obstacle;
 
@@ -27,35 +42,40 @@ class Block {
     }
     reset() {
         this.x = canvas.width;
-        this.y = randomIntFromInterval(300, 380);
-        this.y = Math.round(this.y / 10) * 10;
-        this.width = randomIntFromInterval(750, 1200);
+        this.y = randomIntFromInterval(min_y_blocks, max_y_blocks);
+        this.y = Math.round(this.y / player.height) * player.height;
+        this.width = randomIntFromInterval(min_x_blocks, max_x_blocks);
         this.height = canvas.height - this.y;
         this.touched = false;
         this.draw = true;
+        console.log(this);
     }
     draw_block() {
         ctx.fillStyle = "burlywood";
         ctx.fillRect(this.x, this.y, this.width, this.height);
     }
     checkBlock() {
-        if (player.y > this.y - player.height) {
+        if (player.y > this.y - player.height + player.dy_down) {
             gameOver();
             return;
         }
         if (player.y < this.y - player.height) {
-            player.y += player.dy_down;
+            player.y += player.dy_down * acceleration;
         } else if (
             player.x < this.x - player.width ||
             player.x > this.x + this.width
         ) {
             player.prevent_from_going_up = true;
-            player.y += player.dy_down;
+            player.y += player.dy_down * acceleration;
         } else {
             // the following commands execute when the player is touching block
-            blocks_jumped =
-                this.touched == false ? blocks_jumped + 1 : blocks_jumped;
+            blocks_jumped = this.touched == false ? blocks_jumped + 1 : blocks_jumped;
             jump_counter = collider == false ? jump_counter + 1 : jump_counter;
+            if (this.touched == false) {
+                console.log(player.y);
+                console.log(this.y);
+                console.log(this.y - player.y + "\n");
+            }
             this.touched = true;
             collider = true;
             player.prevent_from_going_up = false;
@@ -74,7 +94,7 @@ class Player {
         this.dx = dx;
         this.dy_up = dy_up;
         this.dy_down = dy_down;
-        this.prevent_from_going_up = false;
+        this.prevent_from_going_up = true;
         this.pressed = false;
     }
 }
@@ -96,7 +116,6 @@ class Shot extends Block {
             this.y > obstacle.y &&
             this.y < obstacle.y + obstacle.width
         ) {
-            console.log("collided");
             this.draw = false;
             return true;
         }
@@ -105,9 +124,9 @@ class Shot extends Block {
 }
 
 function setup() {
-    player = new Player(200, 100, 50, 50, 60, 20, 10);
-    block1 = new Block(200, 300, canvas.width, canvas.height, true);
-    block2 = new Block(200, 380, canvas.width, canvas.height, false);
+    player = new Player(200, 100, player_width, player_height, player_dx, player_dy_up, player_dy_down);
+    block1 = new Block(200, max_y_blocks, canvas.width, canvas.height, true);
+    block2 = new Block(200, min_y_blocks, canvas.width, canvas.height, false);
     obstacle = new Obstacle(0, 0, 50, 0, false);
     // flag setup
     pressed = false;
@@ -149,7 +168,7 @@ function gameLoop() {
 
     if (obstacle.draw) {
         obstacle.draw_block();
-        obstacle.x -= player.dx / 10;
+        obstacle.x -= player.dx / 8;
         obstacle.draw = obstacle.x + obstacle.width <= 0 ? false : true;
     }
 
