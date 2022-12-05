@@ -1,35 +1,29 @@
 const canvas = document.getElementById("canvas");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
+console.log("Canvas Width: " + canvas.width);
+console.log("Canvas Height: " + canvas.height);
 const ctx = canvas.getContext("2d");
 
 const acceleration_down = 1.01;
 const acceleration_up = 0.94;
-const player_dx = 60;
-const player_dy_up = 20;
-const player_dy_down = 10;
-const player_width = player_dy_down * 3;
-const player_height = player_dy_down * 3;
-const max_x_blocks = canvas.width;
-const min_x_blocks = canvas.width * 0.8;
-const min_y_blocks =
-    Math.round(canvas.height / 2 / player_height) * player_height;
-const max_y_blocks =
-    Math.round((canvas.height * 0.6) / player_height) * player_height;
+const player_dx = canvas.width * 0.04;
+const player_dy_up = canvas.height * 0.03;
+const player_dy_down = canvas.height * 0.015;
+const player_width = player_dy_down * 4;
+const player_height = player_dy_down * 4;
+const max_x_platform = canvas.width;
+const min_x_platform = canvas.width * 0.8;
+const min_y_platform = Math.round(canvas.height / 2 / player_height) * player_height;
+const max_y_platform = Math.round((canvas.height * 0.6) / player_height) * player_height;
 
-console.log({ max_x_blocks, min_x_blocks, max_y_blocks, min_y_blocks });
-console.log({
-    player_dx,
-    player_dy_up,
-    player_dy_down,
-    player_width,
-    player_height,
-});
+console.log({ max_x_platform, min_x_platform, max_y_platform, min_y_platform });
+console.log({ player_dx, player_dy_up, player_dy_down, player_width, player_height });
 
-let player, block1, block2, obstacle;
+let player, platform1, platform2;
 
 // Flags
-let pressed, draw_block_1, draw_block_2, collider, block_to_check;
+let pressed, draw_platform_1, draw_platform_2, collider, platform_to_check;
 
 // shot array
 let shots = [];
@@ -40,33 +34,50 @@ let blocks_jumped;
 let record = 0;
 
 class Block {
-    constructor(x, y, width, height, draw) {
+    constructor(x, y, width, height, draw, color) {
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
-        this.touched = false;
         this.draw = draw;
+        this.color = color;
+    }
+    draw_obj() {
+        if (this.draw) {
+            ctx.fillStyle = this.color;
+            ctx.fillRect(this.x, this.y, this.width, this.height);
+        }
+    }
+    move() {
+        if (this.draw) {
+            this.x -= player.dx / 4;
+            this.draw = this.x + this.width <= 0 ? false : true;
+        }
+    }
+}
+
+class Platform extends Block {
+    constructor(x, y, width, height, draw, color) {
+        super(x, y, width, height, draw, color);
+        this.touched = false;
+        this.obstacle = new Obstacle(this.x + this.width / 2, this.y - 50, 50, 50, true,  "red");
     }
     reset() {
         this.x = canvas.width;
-        this.y = randomIntFromInterval(min_y_blocks, max_y_blocks);
+        this.y = randomIntFromInterval(min_y_platform, max_y_platform);
         this.y = Math.round(this.y / player.height) * player.height;
-        this.width = randomIntFromInterval(min_x_blocks, max_x_blocks);
+        this.width = randomIntFromInterval(min_x_platform, max_x_platform);
         this.height = canvas.height - this.y;
         this.touched = false;
         this.draw = true;
+        this.obstacle = new Obstacle(this.x + this.width / 2, this.y - 50, 50, 50, true, "red");
         console.log(this);
     }
-    draw_block() {
-        ctx.fillStyle = "burlywood";
-        ctx.fillRect(this.x, this.y, this.width, this.height);
-    }
-    checkBlock() {
+    check_platform() {
         if (player.y < this.y - player.height) {
             player.y += player.dy_down;
             player.dy_down *= acceleration_down;
-        } else if (player.y > (this.y - player.height + player.dy_down)) {
+        } else if (player.y > this.y - player.height + player.dy_down) {
             gameOver();
             return;
         } else if (
@@ -77,9 +88,8 @@ class Block {
             player.y += player.dy_down;
             player.dy_down *= acceleration_down;
         } else {
-            // the following commands execute when the player is touching block
-            blocks_jumped =
-                this.touched == false ? blocks_jumped + 1 : blocks_jumped;
+            // the following commands execute when the player is touching the platform
+            blocks_jumped = this.touched == false ? blocks_jumped + 1 : blocks_jumped;
             jump_counter = collider == false ? jump_counter + 1 : jump_counter;
             this.touched = true;
             collider = true;
@@ -88,10 +98,51 @@ class Block {
             player.y = this.y - player.height;
         }
         if (player.x > this.x + this.width) {
-            block_to_check = block_to_check == 1 ? 2 : 1;
+            platform_to_check = platform_to_check == 1 ? 2 : 1;
+        }
+    }
+    draw_obj(other_platform) {
+        super.draw_obj();
+        if (this.draw) {
+            this.obstacle.draw_obj();
+            this.obstacle.move();
+        } else if (other_platform.x + other_platform.width < other_platform.width * 0.75) {
+            this.reset();
         }
     }
 }
+
+class Obstacle extends Block {
+    constructor(x, y, width, height, draw, color) {
+        super(x, y, width, height, draw, color);
+    }
+}
+
+class Shot extends Block {
+    constructor(x, y, width, height, draw, color) {
+        super(x, y, width, height, draw, color);
+        shots.push(this);
+    }
+    collision(platform) {
+        if (
+            this.x >= platform.obstacle.x &&
+            this.x <= platform.obstacle.x + platform.obstacle.width &&
+            this.y > platform.obstacle.y &&
+            this.y < platform.obstacle.y + platform.obstacle.width &&
+            platform.obstacle.draw
+        ) {
+            // collided
+            this.draw = false;
+            platform.obstacle.draw = false;
+        }
+    }
+    move() {
+        if (this.draw) {
+            this.x += player.dx / 8;
+        }
+    }
+}
+
 class Player {
     constructor(x, y, width, height, dx, dy_up, dy_down) {
         this.x = x;
@@ -105,49 +156,16 @@ class Player {
         this.pressed = false;
     }
 }
-class Obstacle extends Block {
-    constructor(x, y, width, height, draw) {
-        super(x, y, width, height, draw);
-    }
-}
-
-class Shot extends Block {
-    constructor(x, y, width, height, draw) {
-        super(x, y, width, height, draw);
-        shots.push(this);
-    }
-    collision() {
-        if (
-            this.x >= obstacle.x &&
-            this.x <= obstacle.x + obstacle.width &&
-            this.y > obstacle.y &&
-            this.y < obstacle.y + obstacle.width
-        ) {
-            this.draw = false;
-            return true;
-        }
-        return false;
-    }
-}
 
 function setup() {
-    player = new Player(
-        300,
-        100,
-        player_width,
-        player_height,
-        player_dx,
-        player_dy_up,
-        player_dy_down
-    );
-    block1 = new Block(200, max_y_blocks, canvas.width, canvas.height, true);
-    block2 = new Block(200, min_y_blocks, canvas.width, canvas.height, false);
-    obstacle = new Obstacle(0, 0, 50, 0, false);
+    player = new Player( 300, 100, player_width, player_height, player_dx, player_dy_up, player_dy_down);
+    platform1 = new Platform( 200, max_y_platform, canvas.width, canvas.height, true,  "burlywood");
+    platform2 = new Platform( 200, min_y_platform, canvas.width, canvas.height, false, "burlywood");
     // flag setup
     pressed = false;
-    block_to_check = 1;
-    draw_block_1 = true;
-    draw_block_2 = false;
+    platform_to_check = 1;
+    draw_platform_1 = true;
+    draw_platform_2 = false;
     // display setup
     blocks_jumped = 0;
     jump_counter = 0;
@@ -162,41 +180,26 @@ function gameLoop() {
     ctx.fillStyle = "grey";
     ctx.fillRect(player.x, player.y, player.width, player.height);
     // Draw jump counter & blocks_jumped
-    ctx.font = "26px Courier New";
-    ctx.fillText("BLOCKS : " + blocks_jumped, canvas.width - 225, 50);
-    ctx.font = "26px Courier New";
-    ctx.fillText("JUMPS  : " + jump_counter, canvas.width - 225, 80);
-    ctx.font = "26px Courier New";
-    ctx.fillText("RECORD : " + record, canvas.width - 225, 110);
+    ctx.font = canvas.width * 0.02 + "px Courier New";
+    ctx.fillText("BLOCKS : " + blocks_jumped, canvas.width - canvas.width * 0.2, canvas.height * 0.1);
+    ctx.font = canvas.width * 0.02 + "px Courier New";
+    ctx.fillText("JUMPS  : " + jump_counter, canvas.width - canvas.width * 0.2, canvas.height * 0.15);
+    ctx.font = canvas.width * 0.02 + "px Courier New";
+    ctx.fillText("RECORD : " + record, canvas.width - canvas.width * 0.2, canvas.height * 0.2);
 
-    if (block1.draw) {
-        block1.draw_block();
-    } else if (block2.x + block2.width < block2.width * 0.75) {
-        block1.reset();
+    platform1.draw_obj(platform2);
+    platform2.draw_obj(platform1);
+    
+    if (platform1.x + platform1.width < 0) {
+        platform1.draw = false;
+    }
+    if (platform2.x + platform2.width < 0) {
+        platform2.draw = false;
     }
 
-    if (block2.draw) {
-        block2.draw_block();
-    } else if (block1.x + block1.width < block1.width * 0.75) {
-        block2.reset();
-    }
-
-    if (obstacle.draw) {
-        obstacle.draw_block();
-        obstacle.x -= player.dx / 8;
-        obstacle.draw = obstacle.x + obstacle.width <= 0 ? false : true;
-    }
-
-    if (block1.x + block1.width < 0) {
-        block1.draw = false;
-    }
-    if (block2.x + block2.width < 0) {
-        block2.draw = false;
-    }
-
-    //make blocks move backwards at the same speed
-    block1.x -= player.dx / 4;
-    block2.x -= player.dx / 4;
+    // make blocks move backwards at the same speed
+    platform1.x -= player.dx / 4;
+    platform2.x -= player.dx / 4;
 
     if (pressed) {
         // check if player.y reached max
@@ -212,36 +215,24 @@ function gameLoop() {
             }
         }
     }
-    if (blocks_jumped % 2 == 0 && blocks_jumped != 0 && !obstacle.draw) {
-        // Set obstacle draw property to true so that obstacle gets drawn next round
-        obstacle.draw = true;
-        obstacle.y = randomIntFromInterval(150, 200);
-        obstacle.height = 50;
-        obstacle.x = canvas.width * 2;
-    }
+
     if (!pressed) {
-        // console.log(block_to_check);
-        block_to_check == 1 ? block1.checkBlock() : block2.checkBlock();
+        platform_to_check == 1 ? platform1.check_platform() : platform2.check_platform();
         player.dy_up = player_dy_up;
+    }
+    if (blocks_jumped % 3 == 0 && blocks_jumped != 0) {
+        // increase speed
+        player.dx += 0.04;
     }
 
     // shots
     for (let i = 0; i < shots.length; i++) {
         if (shots[i].draw) {
-            // draw shot
-            ctx.fillStyle = "black";
-            ctx.fillRect(
-                shots[i].x,
-                shots[i].y,
-                shots[i].width,
-                shots[i].height
-            );
-            shots[i].x += player.dx / 8;
+            shots[i].draw_obj();
+            shots[i].move();
             // check for collision
-            let collided = shots[i].collision();
-            if (collided) {
-                obstacle.draw = false;
-            }
+            let platform = platform_to_check == 1 ? platform1 : platform2;
+            shots[i].collision(platform);
         }
         if (shots[i].x >= canvas.width) {
             shots.shift();
@@ -269,13 +260,7 @@ function keyDownHandler(e) {
     }
     // shot
     if (e.keyCode == 32) {
-        new Shot(
-            player.x + player.width,
-            player.y + player.height / 2,
-            6,
-            6,
-            true
-        );
+        new Shot(player.x + player.width, player.y + player.height / 2, 6, 6, true,  "black");
     }
 }
 
@@ -290,6 +275,6 @@ function keyUpHandler(e) {
 
 function gameOver() {
     record = record < jump_counter ? jump_counter : record;
-    //sfx.game_over.play();
+    // sfx.game_over.play();
     setup();
 }
