@@ -1,9 +1,11 @@
 canvas {
-    border-style: solid;
-    border-radius: 10px;
     border-color: grey;
-    background-color:beige;
-    margin-left: 9%;
-    margin-right: 9%;
-    margin-top: 5%;
+    background-color: beige;
+}
+
+html,
+body {
+    margin: 0;
+    height: 100%;
+    overflow: hidden
 }
