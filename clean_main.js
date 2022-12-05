@@ -1,22 +1,30 @@
 const canvas = document.getElementById("canvas");
-canvas.width =  window.innerWidth;
+canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 const ctx = canvas.getContext("2d");
 
-const acceleration = 0.95;
-const player_dx = 100;
-const player_dy_up = 25;
-const player_dy_down = 25;
-const player_width = player_dy_down * 4;
-const player_height = player_dy_down * 4;
+const acceleration_down = 1.01;
+const acceleration_up = 0.94;
+const player_dx = 60;
+const player_dy_up = 20;
+const player_dy_down = 10;
+const player_width = player_dy_down * 3;
+const player_height = player_dy_down * 3;
 const max_x_blocks = canvas.width;
 const min_x_blocks = canvas.width * 0.8;
-const min_y_blocks = Math.round((canvas.height / 2) / player_height) * player_height;
-const max_y_blocks = Math.round((canvas.height * 0.6) / player_height) * player_height;
+const min_y_blocks =
+    Math.round(canvas.height / 2 / player_height) * player_height;
+const max_y_blocks =
+    Math.round((canvas.height * 0.6) / player_height) * player_height;
 
 console.log({ max_x_blocks, min_x_blocks, max_y_blocks, min_y_blocks });
-console.log({ player_dx, player_dy_up, player_dy_down, player_width, player_height });
-
+console.log({
+    player_dx,
+    player_dy_up,
+    player_dy_down,
+    player_width,
+    player_height,
+});
 
 let player, block1, block2, obstacle;
 
@@ -55,30 +63,29 @@ class Block {
         ctx.fillRect(this.x, this.y, this.width, this.height);
     }
     checkBlock() {
-        if (player.y > this.y - player.height + player.dy_down) {
+        if (player.y < this.y - player.height) {
+            player.y += player.dy_down;
+            player.dy_down *= acceleration_down;
+        } else if (player.y > (this.y - player.height + player.dy_down)) {
             gameOver();
             return;
-        }
-        if (player.y < this.y - player.height) {
-            player.y += player.dy_down * acceleration;
         } else if (
             player.x < this.x - player.width ||
             player.x > this.x + this.width
         ) {
             player.prevent_from_going_up = true;
-            player.y += player.dy_down * acceleration;
+            player.y += player.dy_down;
+            player.dy_down *= acceleration_down;
         } else {
             // the following commands execute when the player is touching block
-            blocks_jumped = this.touched == false ? blocks_jumped + 1 : blocks_jumped;
+            blocks_jumped =
+                this.touched == false ? blocks_jumped + 1 : blocks_jumped;
             jump_counter = collider == false ? jump_counter + 1 : jump_counter;
-            if (this.touched == false) {
-                console.log(player.y);
-                console.log(this.y);
-                console.log(this.y - player.y + "\n");
-            }
             this.touched = true;
             collider = true;
             player.prevent_from_going_up = false;
+            player.dy_down = player_dy_down;
+            player.y = this.y - player.height;
         }
         if (player.x > this.x + this.width) {
             block_to_check = block_to_check == 1 ? 2 : 1;
@@ -124,7 +131,15 @@ class Shot extends Block {
 }
 
 function setup() {
-    player = new Player(200, 100, player_width, player_height, player_dx, player_dy_up, player_dy_down);
+    player = new Player(
+        300,
+        100,
+        player_width,
+        player_height,
+        player_dx,
+        player_dy_up,
+        player_dy_down
+    );
     block1 = new Block(200, max_y_blocks, canvas.width, canvas.height, true);
     block2 = new Block(200, min_y_blocks, canvas.width, canvas.height, false);
     obstacle = new Obstacle(0, 0, 50, 0, false);
@@ -190,6 +205,11 @@ function gameLoop() {
             player.prevent_from_going_up = true;
         } else {
             player.y -= player.dy_up;
+            player.dy_up *= acceleration_up;
+            if (player.dy_up < 3) {
+                player.prevent_from_going_up = true;
+                pressed = false;
+            }
         }
     }
     if (blocks_jumped % 2 == 0 && blocks_jumped != 0 && !obstacle.draw) {
@@ -202,6 +222,7 @@ function gameLoop() {
     if (!pressed) {
         // console.log(block_to_check);
         block_to_check == 1 ? block1.checkBlock() : block2.checkBlock();
+        player.dy_up = player_dy_up;
     }
 
     // shots
