@@ -60,7 +60,8 @@ class Platform extends Block {
     constructor(x, y, width, height, draw, color) {
         super(x, y, width, height, draw, color);
         this.touched = false;
-        this.obstacle = new Obstacle(this.x + this.width / 2, this.y - 50, 50, 50, true,  "red");
+        this.obstacle = new Obstacle(this.x + this.width / 2, this.y - randomIntFromInterval(50, 200), 50, 100, true,  "red");
+        this.obstacle.height = this.y - this.obstacle.y;
     }
     reset() {
         this.x = canvas.width;
@@ -70,7 +71,8 @@ class Platform extends Block {
         this.height = canvas.height - this.y;
         this.touched = false;
         this.draw = true;
-        this.obstacle = new Obstacle(this.x + this.width / 2, this.y - 50, 50, 50, true, "red");
+        this.obstacle = new Obstacle(this.x + this.width / 2, this.y - randomIntFromInterval(50, 200), 50, 100, true, "red");
+        this.obstacle.height = this.y - this.obstacle.y;
         console.log(this);
     }
     check_platform() {
@@ -116,6 +118,13 @@ class Obstacle extends Block {
     constructor(x, y, width, height, draw, color) {
         super(x, y, width, height, draw, color);
     }
+    check_for_collision() {
+        if (this.draw) {
+            if ((player.x >= this.x && player.x <= this.x + this.width) && (player.y > this.y && player.y <= this.y + this.height)) {
+                gameOver();
+            }
+        }
+    }
 }
 
 class Shot extends Block {
@@ -127,8 +136,8 @@ class Shot extends Block {
         if (
             this.x >= platform.obstacle.x &&
             this.x <= platform.obstacle.x + platform.obstacle.width &&
-            this.y > platform.obstacle.y &&
-            this.y < platform.obstacle.y + platform.obstacle.width &&
+            this.y >= platform.obstacle.y &&
+            this.y <= platform.obstacle.y + platform.obstacle.height &&
             platform.obstacle.draw
         ) {
             // collided
@@ -238,6 +247,11 @@ function gameLoop() {
             shots.shift();
         }
     }
+
+    // check obstacle collision
+    platform1.obstacle.check_for_collision();
+    platform2.obstacle.check_for_collision();
+
     requestAnimationFrame(gameLoop);
 }
 gameLoop();
