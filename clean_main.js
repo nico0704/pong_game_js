@@ -5,6 +5,25 @@ console.log("Canvas Width: " + canvas.width);
 console.log("Canvas Height: " + canvas.height);
 const ctx = canvas.getContext("2d");
 
+// background canvas
+var background = new Image();
+background.src = ("./assets/Mars_Background.jpg");
+background.onload = function() {
+    ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
+}
+
+var player_img = new Image();
+player_img.src = "./assets/among_us_purple.png";
+player_img.onload = function() {
+    ctx.drawImage(player_img, 0, 0, canvas.width, canvas.height);
+}
+
+var meteor_img = new Image();
+meteor_img.src = "./assets/alien.png";
+meteor_img.onload = function() {
+    ctx.drawImage(meteor_img, 0, 0, 0, 0);
+}
+
 const acceleration_down = 1.01;
 const acceleration_up = 0.94;
 const player_dx = canvas.width * 0.04;
@@ -123,10 +142,18 @@ class Obstacle extends Block {
     constructor(x, y, width, height, draw, color) {
         super(x, y, width, height, draw, color);
         this.shot = false;
+        this.img = meteor_img;
+    }
+    draw_obj() {
+        if (this.draw) {
+            //ctx.fillStyle = this.color;
+            //ctx.fillRect(this.x, this.y, this.width, this.height);
+            ctx.drawImage(this.img, this.x, this.y, this.width, this.height);
+        }
     }
     check_for_collision() {
         if (this.draw) {
-            if ((player.x >= this.x && player.x <= this.x + this.width) && (player.y > this.y && player.y <= this.y + this.height) && !this.shot) {
+            if ((player.x + player.width/2 > this.x && player.x <= this.x + this.width) && (player.y + player.y/2 > this.y && player.y <= this.y + this.height) && !this.shot) {
                 points--;
                 this.shot = true;
                 if (points < 0) {
@@ -144,7 +171,7 @@ class FriendlyObject extends Block {
     }
     check_for_collision() {
         if (this.draw) {
-            if ((player.x >= this.x && player.x <= this.x + this.width) && (player.y > this.y && player.y <= this.y + this.height) && !this.touched) {
+            if ((player.x + player.width/2 > this.x && player.x <= this.x + this.width) && (player.y + player.y/2 > this.y && player.y <= this.y + this.height) && !this.touched) {
                 points++;
                 console.log(this);
                 this.touched = true;
@@ -191,13 +218,14 @@ class Player {
         this.dy_down = dy_down;
         this.prevent_from_going_up = true;
         this.pressed = false;
+        this.img = player_img;
     }
 }
 
 function setup() {
     player = new Player( 300, 100, player_width, player_height, player_dx, player_dy_up, player_dy_down);
-    platform1 = new Platform( 200, max_y_platform, canvas.width, canvas.height, true,  "burlywood");
-    platform2 = new Platform( 200, min_y_platform, canvas.width, canvas.height, false, "burlywood");
+    platform1 = new Platform( 200, max_y_platform, canvas.width, canvas.height, true,  "brown");
+    platform2 = new Platform( 200, min_y_platform, canvas.width, canvas.height, false, "brown");
     // flag setup
     pressed = false;
     platform_to_check = 1;
@@ -209,14 +237,18 @@ function setup() {
     points = 0;
     // shots
     shots = [];
+    
 }
 setup();
 
 function gameLoop() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
+    
     // Draw player block
-    ctx.fillStyle = "grey";
-    ctx.fillRect(player.x, player.y, player.width, player.height);
+    ctx.drawImage(player.img, player.x, player.y, player.width, player.height)
+    //ctx.fillStyle = "white";
+    //ctx.fillRect(player.x, player.y, player.width, player.height);
     // Draw jump counter & blocks_jumped
     ctx.font = canvas.width * 0.02 + "px Courier New";
     ctx.fillText("POINTS: " + points, canvas.width - canvas.width * 0.2, canvas.height * 0.1);
