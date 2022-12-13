@@ -19,7 +19,7 @@ player_img.onload = function() {
 }
 
 var meteor_img = new Image();
-meteor_img.src = "./assets/alien.png";
+meteor_img.src = "./assets/ghost.png";
 meteor_img.onload = function() {
     ctx.drawImage(meteor_img, 0, 0, 0, 0);
 }
@@ -80,7 +80,7 @@ class Platform extends Block {
     constructor(x, y, width, height, draw, color) {
         super(x, y, width, height, draw, color);
         this.touched = false;
-        this.obstacle = new Obstacle(this.x + this.width / 2, this.y - randomIntFromInterval(50, 200), 50, 0, true,  "red");
+        this.obstacle = new Obstacle(this.x + this.width / 2, this.y - 100, 100, 0, true,  "red");
         this.obstacle.height = this.y - this.obstacle.y;
         this.friendlyObject = new FriendlyObject(this.x + this.width * 0.7, this.y - randomIntFromInterval(150, 250), 50, 50, true,  "green");
     }
@@ -92,7 +92,7 @@ class Platform extends Block {
         this.height = canvas.height - this.y;
         this.touched = false;
         this.draw = true;
-        this.obstacle = new Obstacle(this.x + this.width / 2, this.y - randomIntFromInterval(50, 200), 50, 100, true, "red");
+        this.obstacle = new Obstacle(this.x + this.width / 2, this.y - 100, 100, 100, true, "red");
         this.obstacle.height = this.y - this.obstacle.y;
         this.friendlyObject = new FriendlyObject(randomIntFromInterval(this.width, this.width * 2), this.y - randomIntFromInterval(150, 250), 50, 50, true,  "green");
         console.log(this);
