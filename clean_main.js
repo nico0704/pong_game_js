@@ -5,24 +5,36 @@ console.log("Canvas Width: " + canvas.width);
 console.log("Canvas Height: " + canvas.height);
 const ctx = canvas.getContext("2d");
 
-// background canvas
-var background = new Image();
-background.src = ("./assets/Mars_Background.jpg");
-background.onload = function() {
-    ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
-}
+const image_paths = [
+    "./assets/Mars_Background.jpg",
+    "./assets/background2.jpg",
+    "./assets/among_us_purple.png",
+    "./assets/among_us_purple.png",
+    "./assets/ghost.png",
+    "./assets/ghost.png",
+    "./assets/coin.png",
+    "./assets/coin.png",
+];
+const images = [];
+var img_load_count = 0;
+var img_loaded = false;
+var world_det = 0; // 0 => space, 1 => ???
 
-var player_img = new Image();
-player_img.src = "./assets/among_us_purple.png";
-player_img.onload = function() {
-    ctx.drawImage(player_img, 0, 0, canvas.width, canvas.height);
-}
-
-var meteor_img = new Image();
-meteor_img.src = "./assets/ghost.png";
-meteor_img.onload = function() {
-    ctx.drawImage(meteor_img, 0, 0, 0, 0);
-}
+image_paths.forEach((src) => {
+    const img = new Image();
+    img.src = src;
+    images.push(img);
+    img.onload = () => {
+        img_load_count++;
+        if (img_load_count === image_paths.length) {
+            img_loaded = true;
+            console.log("images loaded");
+            setup();
+            console.log("setup terminates... calling game loop");
+            gameLoop();
+        }
+    };
+});
 
 const acceleration_down = 1.01;
 const acceleration_up = 0.94;
@@ -33,11 +45,19 @@ const player_width = player_dy_down * 4;
 const player_height = player_dy_down * 4;
 const max_x_platform = canvas.width;
 const min_x_platform = canvas.width * 0.8;
-const min_y_platform = Math.round(canvas.height / 2 / player_height) * player_height;
-const max_y_platform = Math.round((canvas.height * 0.6) / player_height) * player_height;
+const min_y_platform =
+    Math.round(canvas.height / 2 / player_height) * player_height;
+const max_y_platform =
+    Math.round((canvas.height * 0.6) / player_height) * player_height;
 
 console.log({ max_x_platform, min_x_platform, max_y_platform, min_y_platform });
-console.log({ player_dx, player_dy_up, player_dy_down, player_width, player_height });
+console.log({
+    player_dx,
+    player_dy_up,
+    player_dy_down,
+    player_width,
+    player_height,
+});
 
 let player, platform1, platform2;
 
@@ -80,9 +100,23 @@ class Platform extends Block {
     constructor(x, y, width, height, draw, color) {
         super(x, y, width, height, draw, color);
         this.touched = false;
-        this.obstacle = new Obstacle(this.x + this.width / 2, this.y - 100, 100, 0, true,  "red");
+        this.obstacle = new Obstacle(
+            this.x + this.width / 2,
+            this.y - 100,
+            100,
+            0,
+            true,
+            "red"
+        );
         this.obstacle.height = this.y - this.obstacle.y;
-        this.friendlyObject = new FriendlyObject(this.x + this.width * 0.7, this.y - randomIntFromInterval(150, 250), 50, 50, true,  "green");
+        this.friendlyObject = new FriendlyObject(
+            this.x + this.width * 0.7,
+            this.y - randomIntFromInterval(150, 250),
+            50,
+            50,
+            true,
+            "green"
+        );
     }
     reset() {
         this.x = canvas.width;
@@ -92,9 +126,23 @@ class Platform extends Block {
         this.height = canvas.height - this.y;
         this.touched = false;
         this.draw = true;
-        this.obstacle = new Obstacle(this.x + this.width / 2, this.y - 100, 100, 100, true, "red");
+        this.obstacle = new Obstacle(
+            this.x + this.width / 2,
+            this.y - 100,
+            100,
+            100,
+            true,
+            "red"
+        );
         this.obstacle.height = this.y - this.obstacle.y;
-        this.friendlyObject = new FriendlyObject(randomIntFromInterval(this.width, this.width * 2), this.y - randomIntFromInterval(150, 250), 50, 50, true,  "green");
+        this.friendlyObject = new FriendlyObject(
+            randomIntFromInterval(this.width, this.width * 2),
+            this.y - randomIntFromInterval(150, 250),
+            50,
+            50,
+            true,
+            "green"
+        );
         console.log(this);
     }
     check_platform() {
@@ -113,7 +161,8 @@ class Platform extends Block {
             player.dy_down *= acceleration_down;
         } else {
             // the following commands execute when the player is touching the platform
-            blocks_jumped = this.touched == false ? blocks_jumped + 1 : blocks_jumped;
+            blocks_jumped =
+                this.touched == false ? blocks_jumped + 1 : blocks_jumped;
             jump_counter = collider == false ? jump_counter + 1 : jump_counter;
             this.touched = true;
             collider = true;
@@ -132,7 +181,10 @@ class Platform extends Block {
             this.obstacle.move();
             this.friendlyObject.draw_obj();
             this.friendlyObject.move();
-        } else if (other_platform.x + other_platform.width < other_platform.width * 0.75) {
+        } else if (
+            other_platform.x + other_platform.width <
+            other_platform.width * 0.75
+        ) {
             this.reset();
         }
     }
@@ -142,7 +194,7 @@ class Obstacle extends Block {
     constructor(x, y, width, height, draw, color) {
         super(x, y, width, height, draw, color);
         this.shot = false;
-        this.img = meteor_img;
+        this.img = images[4 + world_det];
     }
     draw_obj() {
         if (this.draw) {
@@ -153,12 +205,18 @@ class Obstacle extends Block {
     }
     check_for_collision() {
         if (this.draw) {
-            if ((player.x + player.width/2 > this.x && player.x <= this.x + this.width) && (player.y + player.y/2 > this.y && player.y <= this.y + this.height) && !this.shot) {
+            if (
+                player.x + player.width / 2 > this.x &&
+                player.x <= this.x + this.width &&
+                player.y + player.y / 2 > this.y &&
+                player.y <= this.y + this.height &&
+                !this.shot
+            ) {
                 points--;
                 this.shot = true;
                 if (points < 0) {
                     gameOver();
-                } 
+                }
             }
         }
     }
@@ -168,10 +226,24 @@ class FriendlyObject extends Block {
     constructor(x, y, width, height, draw, color) {
         super(x, y, width, height, draw, color);
         this.touched = false;
+        this.img = images[6 + world_det];
+    }
+    draw_obj() {
+        if (this.draw) {
+            //ctx.fillStyle = this.color;
+            //ctx.fillRect(this.x, this.y, this.width, this.height);
+            ctx.drawImage(this.img, this.x, this.y, this.width, this.height);
+        }
     }
     check_for_collision() {
         if (this.draw) {
-            if ((player.x + player.width/2 > this.x && player.x <= this.x + this.width) && (player.y + player.y/2 > this.y && player.y <= this.y + this.height) && !this.touched) {
+            if (
+                player.x + player.width / 2 > this.x &&
+                player.x <= this.x + this.width &&
+                player.y + player.y / 2 > this.y &&
+                player.y <= this.y + this.height &&
+                !this.touched
+            ) {
                 points++;
                 console.log(this);
                 this.touched = true;
@@ -218,14 +290,39 @@ class Player {
         this.dy_down = dy_down;
         this.prevent_from_going_up = true;
         this.pressed = false;
-        this.img = player_img;
+        this.img = images[2 + world_det];
     }
 }
 
 function setup() {
-    player = new Player( 300, 100, player_width, player_height, player_dx, player_dy_up, player_dy_down);
-    platform1 = new Platform( 200, max_y_platform, canvas.width, canvas.height, true,  "brown");
-    platform2 = new Platform( 200, min_y_platform, canvas.width, canvas.height, false, "brown");
+    if (!img_loaded) {
+        return;
+    }
+    player = new Player(
+        300,
+        100,
+        player_width,
+        player_height,
+        player_dx,
+        player_dy_up,
+        player_dy_down
+    );
+    platform1 = new Platform(
+        200,
+        max_y_platform,
+        canvas.width,
+        canvas.height,
+        true,
+        "brown"
+    );
+    platform2 = new Platform(
+        200,
+        min_y_platform,
+        canvas.width,
+        canvas.height,
+        false,
+        "brown"
+    );
     // flag setup
     pressed = false;
     platform_to_check = 1;
@@ -237,31 +334,43 @@ function setup() {
     points = 0;
     // shots
     shots = [];
-    
 }
-setup();
+//setup();
 
 function gameLoop() {
+    if (!img_loaded) {
+        return;
+    }
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
-    
+    ctx.drawImage(images[0 + world_det], 0, 0, canvas.width, canvas.height);
+
     // Draw player block
-    ctx.drawImage(player.img, player.x, player.y, player.width, player.height)
+    ctx.drawImage(player.img, player.x, player.y, player.width, player.height);
     //ctx.fillStyle = "white";
     //ctx.fillRect(player.x, player.y, player.width, player.height);
     // Draw jump counter & blocks_jumped
-    ctx.font = canvas.width * 0.02 + "px Courier New";
-    ctx.fillText("POINTS: " + points, canvas.width - canvas.width * 0.2, canvas.height * 0.1);
+    ctx.font = "bold " + canvas.width * 0.02 + "px Courier New";
+    ctx.fillStyle = "black";
+    ctx.fillText(
+        "POINTS: " + points,
+        canvas.width - canvas.width * 0.2,
+        canvas.height * 0.1
+    );
     // ctx.font = canvas.width * 0.02 + "px Courier New";
     // ctx.fillText("BLOCKS : " + blocks_jumped, canvas.width - canvas.width * 0.2, canvas.height * 0.1);
     // ctx.font = canvas.width * 0.02 + "px Courier New";
     // ctx.fillText("JUMPS  : " + jump_counter, canvas.width - canvas.width * 0.2, canvas.height * 0.15);
-    // ctx.font = canvas.width * 0.02 + "px Courier New";
-    // ctx.fillText("RECORD : " + record, canvas.width - canvas.width * 0.2, canvas.height * 0.2);
+    ctx.font = "bold " + canvas.width * 0.02 + "px Courier New";
+    ctx.fillStyle = "black";
+    ctx.fillText(
+        "RECORD : " + record,
+        canvas.width - canvas.width * 0.2,
+        canvas.height * 0.15
+    );
 
     platform1.draw_obj(platform2);
     platform2.draw_obj(platform1);
-    
+
     if (platform1.x + platform1.width < 0) {
         platform1.draw = false;
     }
@@ -289,7 +398,9 @@ function gameLoop() {
     }
 
     if (!pressed) {
-        platform_to_check == 1 ? platform1.check_platform() : platform2.check_platform();
+        platform_to_check == 1
+            ? platform1.check_platform()
+            : platform2.check_platform();
         player.dy_up = player_dy_up;
     }
     if (blocks_jumped % 3 == 0 && blocks_jumped != 0) {
@@ -319,7 +430,6 @@ function gameLoop() {
 
     requestAnimationFrame(gameLoop);
 }
-gameLoop();
 
 function randomIntFromInterval(min, max) {
     // min and max included
@@ -339,7 +449,14 @@ function keyDownHandler(e) {
     }
     // shot
     if (e.keyCode == 32) {
-        new Shot(player.x + player.width, player.y + player.height / 2, 6, 6, true,  "black");
+        new Shot(
+            player.x + player.width,
+            player.y + player.height / 2,
+            6,
+            6,
+            true,
+            "black"
+        );
     }
 }
 
@@ -350,7 +467,14 @@ function keyUpHandler(e) {
         player.prevent_from_going_up = true;
         pressed = false;
     }
+    if (e.keyCode == 87) {
+        // change world
+        world_det = 1 - world_det;
+        console.log(world_det);
+    }
 }
+
+
 
 function gameOver() {
     record = record < jump_counter ? jump_counter : record;
