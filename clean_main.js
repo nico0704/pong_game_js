@@ -19,6 +19,7 @@ const images = [];
 var img_load_count = 0;
 var img_loaded = false;
 var world_det = 0; // 0 => space, 1 => ???
+var start_pressed = false;
 
 image_paths.forEach((src) => {
     const img = new Image();
@@ -29,9 +30,12 @@ image_paths.forEach((src) => {
         if (img_load_count === image_paths.length) {
             img_loaded = true;
             console.log("images loaded");
-            setup();
-            console.log("setup terminates... calling game loop");
-            gameLoop();
+            ctx.drawImage(images[0 + world_det], 0, 0, canvas.width, canvas.height);
+            ctx.font = "bold " + canvas.width * 0.05 + "px Courier New";
+            ctx.fillStyle = "black";
+            ctx.fillText("PRESS S TO START", canvas.width / 2, 150);
+            //setup();
+            //gameLoop();
         }
     };
 });
@@ -53,6 +57,13 @@ var sfx = {
         src: "./assets/hit.mp3",
     }),
 };
+
+// music
+var music = {
+    game_music: new Howl({
+        src: "./assets/game_music.mp3"
+    }),
+}
 
 const acceleration_down = 1.01;
 const acceleration_up = 0.94;
@@ -121,8 +132,8 @@ class Platform extends Block {
         this.obstacle = new Obstacle(
             this.x + this.width / 2,
             this.y - 100,
+            75,
             100,
-            0,
             false,
             "red"
         );
@@ -147,7 +158,7 @@ class Platform extends Block {
         this.obstacle = new Obstacle(
             this.x + this.width / 2,
             this.y - 100,
-            100,
+            85,
             100,
             true,
             "red"
@@ -226,10 +237,10 @@ class Obstacle extends Block {
     check_for_collision() {
         if (this.draw) {
             if (
-                player.x + player.width / 2 > this.x &&
-                player.x <= this.x + this.width &&
-                player.y + player.y / 2 > this.y &&
-                player.y <= this.y + this.height &&
+                player.x + player.width / 2 > this.x * 1.1 &&
+                player.x < this.x * 0.9 + this.width &&
+                player.y + player.y / 2 > this.y * 1.1 &&
+                player.y < this.y * 0.9 + this.height &&
                 !this.shot
             ) {
                 points--;
@@ -462,6 +473,14 @@ function randomIntFromInterval(min, max) {
 // pressed
 document.addEventListener("keydown", keyDownHandler, false);
 function keyDownHandler(e) {
+    if (e.keyCode == 83 && img_loaded && !start_pressed) {
+        start_pressed = true;
+        setup();
+        console.log("setup terminates... calling game loop");
+        gameLoop();
+        music.game_music.play();
+        return;
+    }
     if (e.keyCode == 38) {
         collider = false;
         if (player.prevent_from_going_up) {
@@ -483,7 +502,7 @@ function keyDownHandler(e) {
             true,
             "black"
         );
-    }
+    } 
 }
 
 // released
