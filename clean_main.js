@@ -36,6 +36,24 @@ image_paths.forEach((src) => {
     };
 });
 
+// sound fx
+var jump_sound_plays = false;
+
+var sfx = {
+    error: new Howl({
+        src: "./assets/error2.mp3",
+    }),
+    success: new Howl({
+        src: "./assets/win2.mp3",
+    }),
+    gameOver: new Howl({
+        src: "./assets/error.mp3",
+    }),
+    hit: new Howl({
+        src: "./assets/hit.mp3",
+    }),
+};
+
 const acceleration_down = 1.01;
 const acceleration_up = 0.94;
 const player_dx = canvas.width * 0.04;
@@ -105,7 +123,7 @@ class Platform extends Block {
             this.y - 100,
             100,
             0,
-            true,
+            false,
             "red"
         );
         this.obstacle.height = this.y - this.obstacle.y;
@@ -159,6 +177,7 @@ class Platform extends Block {
             player.prevent_from_going_up = true;
             player.y += player.dy_down;
             player.dy_down *= acceleration_down;
+            
         } else {
             // the following commands execute when the player is touching the platform
             blocks_jumped =
@@ -169,6 +188,7 @@ class Platform extends Block {
             player.prevent_from_going_up = false;
             player.dy_down = player_dy_down;
             player.y = this.y - player.height;
+            jump_sound_plays = false;
         }
         if (player.x > this.x + this.width) {
             platform_to_check = platform_to_check == 1 ? 2 : 1;
@@ -213,6 +233,7 @@ class Obstacle extends Block {
                 !this.shot
             ) {
                 points--;
+                sfx.error.play();
                 this.shot = true;
                 if (points < 0) {
                     gameOver();
@@ -245,6 +266,7 @@ class FriendlyObject extends Block {
                 !this.touched
             ) {
                 points++;
+                sfx.success.play();
                 console.log(this);
                 this.touched = true;
                 this.draw = false;
@@ -269,7 +291,8 @@ class Shot extends Block {
             // collided
             this.draw = false;
             platform.obstacle.draw = false;
-            points++;
+            //points++;
+            sfx.hit.play();
         }
     }
     move() {
@@ -444,7 +467,10 @@ function keyDownHandler(e) {
         if (player.prevent_from_going_up) {
             return;
         }
-        //sfx.jump.play();
+        if (!jump_sound_plays) {
+            jump_sound_plays = true;
+            //sfx.jump.play();
+        }
         pressed = true;
     }
     // shot
@@ -474,10 +500,8 @@ function keyUpHandler(e) {
     }
 }
 
-
-
 function gameOver() {
     record = record < jump_counter ? jump_counter : record;
-    // sfx.game_over.play();
+    sfx.gameOver.play();
     setup();
 }
