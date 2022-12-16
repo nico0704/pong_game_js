@@ -163,7 +163,7 @@ class Platform extends Block {
             true,
             "red"
         );
-        // randomize obstacles
+        // randomise obstacles
         // 66.66 % chance that obstacle gets drawn
         let random = randomIntFromInterval(1, 3);
         if (random == 1) {
@@ -178,7 +178,7 @@ class Platform extends Block {
             true,
             "green"
         );
-        // randomize friend
+        // randomise friend
         // 66.66 % chance that friend gets drawn
         random = randomIntFromInterval(1, 3);
         if (random == 1) {
