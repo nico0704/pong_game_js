@@ -1,8 +1,14 @@
 const canvas = document.getElementById("canvas");
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-//console.log("Canvas Width: " + canvas.width);
-//console.log("Canvas Height: " + canvas.height);
+canvas.width = window.innerWidth; // 1500
+canvas.height = window.innerHeight; // 705
+// const scale = 1500 / 750;
+// const tol = 0.3
+/*if (canvas.width / canvas.height < scale - tol || canvas.width / canvas.height > scale + tol) {
+    canvas.width = canvas.height * scale; 
+}
+*/
+console.log("Canvas Width: " + canvas.width);
+console.log("Canvas Height: " + canvas.height);
 const ctx = canvas.getContext("2d");
 
 const image_paths = [
@@ -51,30 +57,11 @@ image_paths.forEach((src) => {
     };
 });
 
-// sound fx
-var jump_sound_plays = false;
-
-var sfx = {
-    error: new Howl({
-        src: "./assets/error2.mp3",
-    }),
-    success: new Howl({
-        src: "./assets/win2.mp3",
-    }),
-    gameOver: new Howl({
-        src: "./assets/error.mp3",
-    }),
-    hit: new Howl({
-        src: "./assets/hit.mp3",
-    }),
-};
-
-// music
-var music = {
-    game_music: new Howl({
-        src: "./assets/game_music.mp3"
-    }),
-}
+let game_music = new Audio("./assets/neon_game_music.mp3");
+let game_over_sound = new Audio("./assets/error.mp3");
+let error_sound = new Audio("./assets/error3.mp3");
+let hit_sound = new Audio("./assets/hit.mp3");
+let success_sound = new Audio("./assets/win2.mp3");
 
 const acceleration_down = 1.01;
 const acceleration_up = 0.94;
@@ -87,6 +74,8 @@ const max_x_platform = canvas.width;
 const min_x_platform = canvas.width * 0.8;
 const min_y_platform = Math.round(canvas.height / 2 / player_height) * player_height;
 const max_y_platform = Math.round((canvas.height * 0.6) / player_height) * player_height;
+
+let gap_det;
 
 let player, platform1, platform2;
 
@@ -213,7 +202,6 @@ class Platform extends Block {
             player.prevent_from_going_up = false;
             player.dy_down = player_dy_down;
             player.y = this.y - player.height;
-            jump_sound_plays = false;
         }
         if (player.x > this.x + this.width) {
             platform_to_check = platform_to_check == 1 ? 2 : 1;
@@ -228,7 +216,7 @@ class Platform extends Block {
             this.friendlyObject.move();
         } else if (
             other_platform.x + other_platform.width <
-            other_platform.width * 0.75
+            other_platform.width * gap_det
         ) {
             this.reset();
         }
@@ -256,7 +244,7 @@ class Obstacle extends Block {
                 !this.shot
             ) {
                 points--;
-                sfx.error.play();
+                error_sound.play();
                 this.shot = true;
                 if (points < 0) {
                     gameOver();
@@ -287,7 +275,11 @@ class FriendlyObject extends Block {
                 !this.touched
             ) {
                 points++;
-                sfx.success.play();
+                // make sure sound is played
+                if (!success_sound.ended) {
+                    success_sound.load();
+                }
+                success_sound.play();
                 this.touched = true;
                 this.draw = false;
             }
@@ -311,7 +303,7 @@ class Shot extends Block {
             // collided
             this.draw = false;
             platform.obstacle.draw = false;
-            sfx.hit.play();
+            hit_sound.play();
         }
     }
     move() {
@@ -376,13 +368,13 @@ function setup() {
     points = 0;
     // shots
     shots = [];
+    // gap
+    gap_det = 0.75;
     // timer
     seconds = 0;
     minutes = 0;
     timer = setInterval(timer_loop, 1000);
-    //timer_loop();
 }
-//setup();
 
 function gameLoop() {
     if (!img_loaded) {
@@ -431,6 +423,7 @@ function gameLoop() {
     if (blocks_jumped % 3 == 0 && blocks_jumped != 0) {
         // increase speed
         player.dx += 0.04;
+        gap_det -= gap_det * 0.0005;
     }
     // shots
     for (let i = 0; i < shots.length; i++) {
@@ -462,7 +455,8 @@ function keyDownHandler(e) {
         setup();
         console.log("setup terminates... calling game loop");
         gameLoop();
-        //music.game_music.play();
+        game_music.loop = true;
+        game_music.play();
         return;
     }
     if (e.keyCode == 38) {
@@ -470,16 +464,26 @@ function keyDownHandler(e) {
         if (player.prevent_from_going_up) {
             return;
         }
-        if (!jump_sound_plays) {
-            jump_sound_plays = true;
-            //sfx.jump.play();
-        }
         pressed = true;
     }
     // shot
     if (e.keyCode == 32) {
         new Shot(player.x + player.width, player.y + player.height / 2, 6, 6, true, "black");
     } 
+    // Arrow Left
+    if (e.keyCode == 37) {
+        if (player.x > 300) {
+            player.x -= 10;
+        } else {
+            player.x = 300;
+        }
+    }
+    // Arrow Right
+    if (e.keyCode == 39) {
+        if (player.x < canvas.width / 3 - player_width) {
+            player.x += 10;
+        }
+    }
 }
 
 // key events:
@@ -546,7 +550,7 @@ function fill_lead_zeros(number, size) {
 
 function gameOver() {
     record = record < jump_counter ? jump_counter : record;
-    sfx.gameOver.play();
+    game_over_sound.play();
     clearInterval(timer);
     setup();
 }
