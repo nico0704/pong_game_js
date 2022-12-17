@@ -194,8 +194,10 @@ class Platform extends Block {
             
         } else {
             // the following commands execute when the player is touching the platform
-            blocks_jumped =
-                this.touched == false ? blocks_jumped + 1 : blocks_jumped;
+            if (!this.touched) {
+                blocks_jumped++;
+                points++;
+            }
             jump_counter = collider == false ? jump_counter + 1 : jump_counter;
             this.touched = true;
             collider = true;
@@ -243,7 +245,7 @@ class Obstacle extends Block {
                 player.y < this.y * 0.9 + this.height &&
                 !this.shot
             ) {
-                points--;
+                points -= 3;
                 error_sound.play();
                 this.shot = true;
                 if (points < 0) {
