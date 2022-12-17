@@ -101,6 +101,9 @@ let points;
 let jump_counter;
 let blocks_jumped;
 let record = 0;
+let timer;
+let seconds;
+let minutes;
 
 class Block {
     constructor(x, y, width, height, draw, color) {
@@ -373,6 +376,11 @@ function setup() {
     points = 0;
     // shots
     shots = [];
+    // timer
+    seconds = 0;
+    minutes = 0;
+    timer = setInterval(timer_loop, 1000);
+    //timer_loop();
 }
 //setup();
 
@@ -446,11 +454,6 @@ function gameLoop() {
     requestAnimationFrame(gameLoop);
 }
 
-function randomIntFromInterval(min, max) {
-    // min and max included
-    return Math.floor(Math.random() * (max - min + 1) + min);
-}
-
 // pressed
 document.addEventListener("keydown", keyDownHandler, false);
 function keyDownHandler(e) {
@@ -478,6 +481,8 @@ function keyDownHandler(e) {
         new Shot(player.x + player.width, player.y + player.height / 2, 6, 6, true, "black");
     } 
 }
+
+// key events:
 
 // released
 document.addEventListener("keyup", keyUpHandler, false);
@@ -509,10 +514,39 @@ function draw_display() {
     ctx.font = "bold " + canvas.width * 0.02 + "px Courier New";
     ctx.fillStyle = "#1c1b1b";
     ctx.fillText("WORLD: w", 2, canvas.height * 0.15);
+    // Timer
+    ctx.font = "bold " + canvas.width * 0.02 + "px Courier New";
+    ctx.fillStyle = "#1c1b1b";
+    ctx.fillText(fill_lead_zeros(minutes, 2) + ":" + fill_lead_zeros(seconds, 2) , canvas.width / 2 - canvas.width * 0.05, canvas.height * 0.05);
+}
+
+// helper functions
+
+function randomIntFromInterval(min, max) {
+    // min and max included
+    return Math.floor(Math.random() * (max - min + 1) + min);
+}
+
+function timer_loop() {
+    if (seconds === 59) {
+        seconds = 0;
+        minutes++;
+    } else {
+        seconds++;
+    }
+}
+
+function fill_lead_zeros(number, size) {
+    number = number.toString();
+    while (number.length < size) {
+        number = "0" + number;
+    }
+    return number;
 }
 
 function gameOver() {
     record = record < jump_counter ? jump_counter : record;
     sfx.gameOver.play();
+    clearInterval(timer);
     setup();
 }
