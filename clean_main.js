@@ -1,12 +1,20 @@
 const canvas = document.getElementById("canvas");
 canvas.width = window.innerWidth; // 1500
 canvas.height = window.innerHeight; // 705
-// const scale = 1500 / 750;
-// const tol = 0.3
-/*if (canvas.width / canvas.height < scale - tol || canvas.width / canvas.height > scale + tol) {
-    canvas.width = canvas.height * scale; 
+const ref_scale_value = 1500 / 705; 
+console.log("Canvas Width: " + canvas.width);
+console.log("Canvas Height: " + canvas.height);
+if (canvas.width >= 1500 && canvas.height >= 705) {
+    canvas.width = 1500;
+    canvas.height = 705;
 }
-*/
+console.log(canvas.width / canvas.height)
+if (canvas.width / canvas.height < ref_scale_value - 0.2) {
+    canvas.height = canvas.width / ref_scale_value;
+}
+if (canvas.width / canvas.height > ref_scale_value + 0.2) {
+    canvas.width = canvas.height * ref_scale_value;
+}
 console.log("Canvas Width: " + canvas.width);
 console.log("Canvas Height: " + canvas.height);
 const ctx = canvas.getContext("2d");
@@ -123,18 +131,18 @@ class Platform extends Block {
         this.touched = false;
         this.obstacle = new Obstacle(
             this.x + this.width / 2,
-            this.y - 100,
-            75,
-            100,
+            this.y - canvas.height * 0.1,
+            canvas.height * 0.1,
+            canvas.width * 0.1,
             false,
             "red"
         );
         this.obstacle.height = this.y - this.obstacle.y;
         this.friendlyObject = new FriendlyObject(
             this.x + this.width * 0.7,
-            this.y - randomIntFromInterval(150, 250),
-            50,
-            50,
+            this.y - randomIntFromInterval(Math.round(canvas.height / 4.7), Math.round(canvas.height / 2.8)),
+            Math.round(canvas.width / 30),
+            Math.round(canvas.width / 30),
             true,
             "green"
         );
@@ -144,14 +152,14 @@ class Platform extends Block {
         this.y = randomIntFromInterval(min_y_platform, max_y_platform);
         this.y = Math.round(this.y / player.height) * player.height;
         this.width = randomIntFromInterval(min_x_platform, max_x_platform);
-        this.height = 30;
+        this.height = Math.round(canvas.height * 0.0426);
         this.touched = false;
         this.draw = true;
         this.obstacle = new Obstacle(
             this.x + this.width / 2,
-            this.y - 100,
-            85,
-            100,
+            this.y - Math.round(canvas.height / 7.05),
+            Math.round(canvas.height / 7.05) * 0.85,
+            Math.round(canvas.height / 7.05),
             true,
             "red"
         );
@@ -163,10 +171,10 @@ class Platform extends Block {
         }
         this.obstacle.height = this.y - this.obstacle.y;
         this.friendlyObject = new FriendlyObject(
-            randomIntFromInterval(this.width, this.width * 2),
-            this.y - randomIntFromInterval(150, 250),
-            50,
-            50,
+            this.x + this.width * 0.7,
+            this.y - randomIntFromInterval(Math.round(canvas.height / 4.7), Math.round(canvas.height / 2.8)),
+            Math.round(canvas.width / 30),
+            Math.round(canvas.width / 30),
             true,
             "green"
         );
@@ -335,8 +343,8 @@ function setup() {
         return;
     }
     player = new Player(
-        300,
-        100,
+        canvas.width * 0.2,
+        canvas.height * 0.141,
         player_width,
         player_height,
         player_dx,
@@ -344,18 +352,18 @@ function setup() {
         player_dy_down
     );
     platform1 = new Platform(
-        200,
+        Math.round(canvas.width * 0.1333),
         max_y_platform,
         canvas.width,
-        30,
+        Math.round(canvas.height * 0.0426),
         true,
         "#942037"
     );
     platform2 = new Platform(
-        200,
+        Math.round(canvas.width * 0.1333),
         min_y_platform,
         canvas.width,
-        30,
+        Math.round(canvas.height * 0.0426),
         false,
         "#942037"
     );
@@ -474,10 +482,10 @@ function keyDownHandler(e) {
     } 
     // Arrow Left
     if (e.keyCode == 37) {
-        if (player.x > 300) {
+        if (player.x > canvas.width * 0.2) {
             player.x -= 10;
         } else {
-            player.x = 300;
+            player.x = canvas.width * 0.2;
         }
     }
     // Arrow Right
