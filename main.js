@@ -23,9 +23,9 @@ const ctx = canvas.getContext("2d"); // context
 // handle images
 const image_paths = [
     "./assets/Mars_Background.jpg",
-    "./assets/background2.jpg",
+    "./assets/beach_landscape.jpg",
     "./assets/among_us_purple.png",
-    "./assets/among_us_purple.png",
+    "./assets/among_us_green.png",
     "./assets/ghost.png",
     "./assets/ghost.png",
     "./assets/coin.png",
@@ -455,7 +455,7 @@ function gameLoop() {
     // Draw background
     ctx.drawImage(images[0 + world_det], 0, 0, canvas.width, canvas.height);
     // Draw player
-    ctx.drawImage(player.img, player.x, player.y, player.width, player.height);
+    ctx.drawImage(images[2 + world_det], player.x, player.y, player.width, player.height);
     // Draw display
     draw_display();
     // Draw platforms
