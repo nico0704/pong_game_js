@@ -111,9 +111,10 @@ let pressed, draw_platform_1, draw_platform_2, collider, platform_to_check;
 
 // array which stores all relevant shots
 let shots = [];
-
+// shot color
+shotColor = "black"
 // array to store colors for platforms
-let platform_colors = ["#942037", "#3C5336"];
+let platform_colors = ["#942037", "#41872f"];
 // array to store text colors
 let text_colors = ["#1c1b1b", "#FAF7E6"];
 
@@ -321,13 +322,10 @@ class FriendlyObject extends Block {
     constructor(x, y, width, height, draw, color) {
         super(x, y, width, height, draw, color);
         this.touched = false;
-        // world_det can only be 0 or 1
-        // the images for the 2 different friendly objects are located at indexes 6 and 7
-        this.img = images[6 + world_det];
     }
     draw_obj() {
         if (this.draw) {
-            ctx.drawImage(this.img, this.x, this.y, this.width, this.height);
+            ctx.drawImage(images[6 + world_det], this.x, this.y, this.width, this.height);
         }
     }
     check_for_collision() {
@@ -358,6 +356,12 @@ class Shot extends Block {
         super(x, y, width, height, draw, color);
         // current instance of Shot gets pushed in shot array
         shots.push(this);
+    }
+    draw_obj() {
+        if (this.draw) {
+            ctx.fillStyle = shotColor;
+            ctx.fillRect(this.x, this.y, this.width, this.height);
+        }
     }
     collision(platform) {
         if (
@@ -554,7 +558,7 @@ function keyDownHandler(e) {
             6,
             6,
             true,
-            "black"
+            shotColor
         );
     }
     // Arrow Left
