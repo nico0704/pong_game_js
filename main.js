@@ -22,14 +22,14 @@ const ctx = canvas.getContext("2d"); // context
 
 // handle images
 const image_paths = [
-    "./assets/Mars_Background.jpg",
+    "./assets/mars_landscape.jpg",
     "./assets/beach_landscape.jpg",
     "./assets/among_us_purple.png",
-    "./assets/among_us_pink_transparent.png",
-    "./assets/ghost.png",
-    "./assets/ghost_island_transparent.png",
+    "./assets/among_us_pink.png",
+    "./assets/ghost_mars.png",
+    "./assets/ghost_island.png",
     "./assets/coin.png",
-    "./assets/coin.png",
+    "./assets/coconut.png",
 ];
 
 const images = []; // array to store the image elements when loaded
@@ -112,9 +112,9 @@ let pressed, draw_platform_1, draw_platform_2, collider, platform_to_check;
 // array which stores all relevant shots
 let shots = [];
 // shot color
-shotColor = "black"
+shotColor = "black";
 // array to store colors for platforms
-let platform_colors = ["#942037", "#41872f"];
+let platform_colors = ["#942037", "#304b3c"];
 // array to store text colors
 let text_colors = ["#1c1b1b", "#FAF7E6"];
 
@@ -293,7 +293,13 @@ class Obstacle extends Block {
     }
     draw_obj() {
         if (this.draw) {
-            ctx.drawImage(images[4 + world_det], this.x, this.y, this.width, this.height);
+            ctx.drawImage(
+                images[4 + world_det],
+                this.x,
+                this.y,
+                this.width,
+                this.height
+            );
         }
     }
     // check collision with player
@@ -325,7 +331,13 @@ class FriendlyObject extends Block {
     }
     draw_obj() {
         if (this.draw) {
-            ctx.drawImage(images[6 + world_det], this.x, this.y, this.width, this.height);
+            ctx.drawImage(
+                images[6 + world_det],
+                this.x,
+                this.y,
+                this.width,
+                this.height
+            );
         }
     }
     check_for_collision() {
@@ -461,7 +473,13 @@ function gameLoop() {
     // Draw background
     ctx.drawImage(images[0 + world_det], 0, 0, canvas.width, canvas.height);
     // Draw player
-    ctx.drawImage(images[2 + world_det], player.x, player.y, player.width, player.height);
+    ctx.drawImage(
+        images[2 + world_det],
+        player.x,
+        player.y,
+        player.width,
+        player.height
+    );
     // Draw display
     draw_display();
     // Draw platforms
