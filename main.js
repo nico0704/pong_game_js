@@ -25,9 +25,9 @@ const image_paths = [
     "./assets/Mars_Background.jpg",
     "./assets/beach_landscape.jpg",
     "./assets/among_us_purple.png",
-    "./assets/among_us_green.png",
+    "./assets/among_us_pink_transparent.png",
     "./assets/ghost.png",
-    "./assets/ghost.png",
+    "./assets/ghost_island_transparent.png",
     "./assets/coin.png",
     "./assets/coin.png",
 ];
@@ -112,6 +112,11 @@ let pressed, draw_platform_1, draw_platform_2, collider, platform_to_check;
 // array which stores all relevant shots
 let shots = [];
 
+// array to store colors for platforms
+let platform_colors = ["#942037", "#3C5336"];
+// array to store text colors
+let text_colors = ["#1c1b1b", "#FAF7E6"];
+
 // variables that are used to display current points, records and time
 let points;
 let jump_counter;
@@ -134,7 +139,7 @@ class Block {
     // draw object on the canvas only if draw property is true
     draw_obj() {
         if (this.draw) {
-            ctx.fillStyle = this.color;
+            ctx.fillStyle = platform_colors[world_det];
             ctx.fillRect(this.x, this.y, this.width, this.height);
         }
     }
@@ -284,13 +289,10 @@ class Obstacle extends Block {
     constructor(x, y, width, height, draw, color) {
         super(x, y, width, height, draw, color);
         this.shot = false;
-        // world_det can only be 0 or 1
-        // the images for the 2 different obstacles are located at indexes 4 and 5
-        this.img = images[4 + world_det];
     }
     draw_obj() {
         if (this.draw) {
-            ctx.drawImage(this.img, this.x, this.y, this.width, this.height);
+            ctx.drawImage(images[4 + world_det], this.x, this.y, this.width, this.height);
         }
     }
     // check collision with player
@@ -416,7 +418,7 @@ function setup() {
         canvas.width,
         Math.round(canvas.height * 0.0426),
         true,
-        "#942037"
+        platform_colors[world_det]
     );
     // create plafrom instance for platform2
     platform2 = new Platform(
@@ -425,7 +427,7 @@ function setup() {
         canvas.width,
         Math.round(canvas.height * 0.0426),
         false,
-        "#942037"
+        platform_colors[world_det]
     );
     // flag setup
     pressed = false;
@@ -588,14 +590,14 @@ function keyUpHandler(e) {
 
 function draw_display() {
     ctx.font = "bold " + canvas.width * 0.02 + "px Courier New";
-    ctx.fillStyle = "#1c1b1b";
+    ctx.fillStyle = text_colors[world_det];
     ctx.fillText(
         "POINTS : " + points,
         canvas.width - canvas.width * 0.15,
         canvas.height * 0.05
     );
     ctx.font = "bold " + canvas.width * 0.02 + "px Courier New";
-    ctx.fillStyle = "#1c1b1b";
+    ctx.fillStyle = text_colors[world_det];
     ctx.fillText(
         "RECORD : " + record,
         canvas.width - canvas.width * 0.15,
@@ -603,17 +605,17 @@ function draw_display() {
     );
     // Control
     ctx.font = "bold " + canvas.width * 0.02 + "px Courier New";
-    ctx.fillStyle = "#1c1b1b";
+    ctx.fillStyle = text_colors[world_det];
     ctx.fillText("JUMP : KEY UP", 2, canvas.height * 0.05);
     ctx.font = "bold " + canvas.width * 0.02 + "px Courier New";
-    ctx.fillStyle = "#1c1b1b";
+    ctx.fillStyle = text_colors[world_det];
     ctx.fillText("SHOOT: SPACE", 2, canvas.height * 0.1);
     ctx.font = "bold " + canvas.width * 0.02 + "px Courier New";
-    ctx.fillStyle = "#1c1b1b";
+    ctx.fillStyle = text_colors[world_det];
     ctx.fillText("WORLD: w", 2, canvas.height * 0.15);
     // Timer
     ctx.font = "bold " + canvas.width * 0.02 + "px Courier New";
-    ctx.fillStyle = "#1c1b1b";
+    ctx.fillStyle = text_colors[world_det];
     ctx.fillText(
         fill_lead_zeros(minutes, 2) + ":" + fill_lead_zeros(seconds, 2),
         canvas.width / 2 - canvas.width * 0.05,
